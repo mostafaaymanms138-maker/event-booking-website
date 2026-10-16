@@ -111,6 +111,44 @@ CREATE TABLE IF NOT EXISTS `waiting_list` (
   CONSTRAINT `waiting_list_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `waiting_list_ibfk_2` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+INSERT INTO categories (id, name) VALUES
+  (1, 'Music'),
+  (2, 'Workshop'),
+  (3, 'Community');
+
+INSERT INTO venues (id, name, address, capacity, suitable_for) VALUES
+  (1, 'Bristol Community Hall', 'Bristol', 150, 'Community events and performances'),
+  (2, 'Harbourside Centre', 'Bristol', 100, 'Workshops and exhibitions');
+
+INSERT INTO events (
+  id, name, description, date, time, venue_id, category_id, price,
+  tickets_total, tickets_remaining, conditions, last_booking_date,
+  is_multiday, days_count, is_active
+) VALUES
+  (
+    1, 'Bristol Community Music Night',
+    'A local music event featuring Bristol performers.',
+    DATE_ADD(CURDATE(), INTERVAL 45 DAY), '19:00:00', 1, 1, 12.00,
+    150, 150, 'All ages welcome.',
+    DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 45 DAY), INTERVAL 1 DAY),
+    0, 1, 1
+  ),
+  (
+    2, 'Creative Skills Workshop',
+    'A practical workshop for local residents.',
+    DATE_ADD(CURDATE(), INTERVAL 30 DAY), '14:00:00', 2, 2, 8.00,
+    100, 100, 'Advance booking recommended.',
+    DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 30 DAY), INTERVAL 1 DAY),
+    0, 1, 1
+  ),
+  (
+    3, 'Community Meet-up',
+    'A free event for people in the local community.',
+    DATE_ADD(CURDATE(), INTERVAL 20 DAY), '11:00:00', 1, 3, 0.00,
+    80, 80, 'Free entry.',
+    DATE_SUB(DATE_ADD(CURDATE(), INTERVAL 20 DAY), INTERVAL 1 DAY),
+    0, 1, 1
+  );
 
 SET FOREIGN_KEY_CHECKS = 1;
 
