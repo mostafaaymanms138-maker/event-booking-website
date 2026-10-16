@@ -10,7 +10,7 @@ Developed as a university project at the University of the West of England (UWE 
 
 - Browse and filter events by category, date, and free-entry availability.
 - View event details and book tickets.
-- Apply advance-booking discounts of 5% to 20%, depending on how far ahead the booking is made.
+- Apply advance-booking discounts of 5% to 20%, depending on how far ahead a booking is made.
 - Apply a 10% UWE student discount.
 - Use simulated payment with card validation.
 - View booking history, download receipts, and cancel bookings.
@@ -63,46 +63,47 @@ bristol-community-events/
 - Python 3.10 or later
 - MySQL Server
 
-### Setup
+### Database setup
 
-1. Clone the repository and open a terminal in the project folder.
-2. Import the database dump:
+The repository's `Database/bce_dump.sql` defines the project tables and creates the `bce` database. It is schema-only and contains no user, booking, payment, or event sample records. Add fictional test data locally if you want to demonstrate the application with populated pages.
 
-   ```bash
-   mysql -u <your-mysql-user> -p < Database/bce_dump.sql
-   ```
+To set up the database with MySQL Workbench:
 
-   Enter your MySQL password when prompted. The dump creates the `bce` database and its tables.
+1. Open `Database/bce_dump.sql` in MySQL Workbench.
+2. Connect to your local MySQL server.
+3. Run the complete SQL script to create the `bce` database and its tables.
 
-3. Install the Python dependencies:
+### Start the application
+
+1. Install the Python dependencies:
 
    ```bash
    cd website
    pip install -r requirements.txt
    ```
 
-4. Configure the database connection for your local MySQL setup. Do not publish passwords, secret keys, or other credentials.
-5. Start the application:
+2. Configure the database connection and Flask session key for your local environment. Before publishing, remove hard-coded credentials and secrets from `app.py` and load them from environment variables instead. Never commit real passwords or secret keys.
+3. Start the application:
 
    ```bash
    python app.py
    ```
 
-6. Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
-
-## Database diagram
-
-![Entity relationship diagram](Database/ERD.png)
+4. Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
 
 ## Admin access
 
-The application includes an administrator panel for authorised accounts. Login credentials are not published in this repository.
+The application includes an administrator panel for authorised accounts. No login credentials are included in this repository.
 
 ## Current limitations
 
 - Payments are simulated; no external payment provider is connected.
 - Waiting-list status is stored in the database, but email notifications are not sent.
 - Multi-day event bookings are stored in the database but are not available through the booking interface.
+
+## Database diagram
+
+![Entity relationship diagram](Database/ERD.png)
 
 ## Author
 
