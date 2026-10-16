@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+<!-- Student: Mostafa Abdelkarim | Student ID: 24061953 | Module: UFCFES-30-1 -->
+{% block title %}Admin Dashboard | Bristol Community Events{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+
+    <aside class="admin-sidebar">
+        <h2>Admin Panel</h2>
+        <nav>
+            <a href="{{ url_for('admin_dashboard') }}" class="active">Dashboard</a>
+            <a href="{{ url_for('admin_events') }}">Events</a>
+            <a href="{{ url_for('admin_bookings') }}">Bookings</a>
+            <a href="{{ url_for('admin_users') }}">Users</a>
+            <a href="{{ url_for('admin_venues') }}">Venues</a>
+            <a href="{{ url_for('admin_reports') }}">Reports</a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <h1>Dashboard</h1>
+
+        <div class="admin-stats">
+            <div class="admin-stat-card">
+                <div class="stat-val">{{ total_events }}</div>
+                <div class="stat-lbl">Active Events</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="stat-val">{{ total_users }}</div>
+                <div class="stat-lbl">Registered Users</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="stat-val">{{ total_bookings }}</div>
+                <div class="stat-lbl">Confirmed Bookings</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="stat-val">£{{ "%.2f"|format(revenue) }}</div>
+                <div class="stat-lbl">Total Revenue</div>
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <h2>Recent Bookings</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Event</th>
+                        <th>User</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in recent %}
+                    <tr>
+                        <td>{{ b.reference }}</td>
+                        <td>{{ b.event_name }}</td>
+                        <td>{{ b.user_name }}</td>
+                        <td>{% if b.total_price == 0 %}Free{% else %}£{{ "%.2f"|format(b.total_price) }}{% endif %}</td>
+                        <td>{{ b.booking_date.strftime('%d %b %Y') }}</td>
+                        <td>{{ b.status|capitalize }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" style="text-align:center;color:var(--text-light);">No bookings yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+</div>
+{% endblock %}

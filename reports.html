@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+<!-- Student: Mostafa Abdelkarim | Student ID: 24061953 | Module: UFCFES-30-1 -->
+{% block title %}Reports | Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+
+    <aside class="admin-sidebar">
+        <h2>Admin Panel</h2>
+        <nav>
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin_events') }}">Events</a>
+            <a href="{{ url_for('admin_bookings') }}">Bookings</a>
+            <a href="{{ url_for('admin_users') }}">Users</a>
+            <a href="{{ url_for('admin_venues') }}">Venues</a>
+            <a href="{{ url_for('admin_reports') }}" class="active">Reports</a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+            <h1 style="margin:0;flex:1;">Reports</h1>
+            <button onclick="window.print()" class="btn btn-primary no-print" style="font-size:0.9rem;">Export to PDF</button>
+        </div>
+
+        <!-- Summary stat cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.75rem;">
+            <div style="background:white;border-radius:10px;padding:1.25rem 1.5rem;box-shadow:var(--shadow);border-left:4px solid #0055a4;">
+                <div style="font-size:0.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;">Total Revenue</div>
+                <div style="font-size:1.8rem;font-weight:800;color:#0055a4;">£{{ "%.0f"|format(revenue_report|sum(attribute='revenue')) }}</div>
+            </div>
+            <div style="background:white;border-radius:10px;padding:1.25rem 1.5rem;box-shadow:var(--shadow);border-left:4px solid #1d4ed8;">
+                <div style="font-size:0.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;">Total Bookings</div>
+                <div style="font-size:1.8rem;font-weight:800;color:#1d4ed8;">{{ revenue_report|sum(attribute='bookings') }}</div>
+            </div>
+            <div style="background:white;border-radius:10px;padding:1.25rem 1.5rem;box-shadow:var(--shadow);border-left:4px solid #0f766e;">
+                <div style="font-size:0.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;">Upcoming Events</div>
+                <div style="font-size:1.8rem;font-weight:800;color:#0f766e;">{{ upcoming|length }}</div>
+            </div>
+            <div style="background:white;border-radius:10px;padding:1.25rem 1.5rem;box-shadow:var(--shadow);border-left:4px solid #92400e;">
+                <div style="font-size:0.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;">On Waiting List</div>
+                <div style="font-size:1.8rem;font-weight:800;color:#92400e;">{{ waitlist|length }}</div>
+            </div>
+            <div style="background:white;border-radius:10px;padding:1.25rem 1.5rem;box-shadow:var(--shadow);border-left:4px solid #4b5563;">
+                <div style="font-size:0.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;">Event Categories</div>
+                <div style="font-size:1.8rem;font-weight:800;color:#4b5563;">{{ by_category|length }}</div>
+            </div>
+        </div>
+
+        <!-- Revenue by Event -->
+        <div class="admin-card" style="margin-bottom:1.5rem;">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.1rem;color:var(--uwe-dark);">
+                Revenue by Event
+            </h2>
+            <table class="admin-table">
+                <thead>
+                    <tr><th>#</th><th>Event</th><th>Category</th><th>Confirmed Bookings</th><th>Revenue</th><th>Performance</th></tr>
+                </thead>
+                <tbody>
+                    {% set max_rev = revenue_report[0].revenue if revenue_report and revenue_report[0].revenue > 0 else 1 %}
+                    {% for r in revenue_report %}
+                    <tr>
+                        <td style="color:var(--text-light);font-size:0.85rem;">{{ loop.index }}</td>
+                        <td><strong>{{ r.name }}</strong></td>
+                        <td><span style="background:var(--bg-light);border-radius:20px;padding:0.2rem 0.65rem;font-size:0.8rem;">{{ r.category_name }}</span></td>
+                        <td>{{ r.bookings }}</td>
+                        <td>
+                            {% if r.revenue == 0 %}
+                                <span style="color:var(--free-green);font-weight:600;">Free</span>
+                            {% else %}
+                                <strong>£{{ "%.2f"|format(r.revenue) }}</strong>
+                            {% endif %}
+                        </td>
+                        <td style="min-width:120px;">
+                            <div style="background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden;">
+                                <div style="width:{{ ((r.revenue / max_rev) * 100)|int }}%;background:var(--uwe-blue,#0055a4);height:100%;border-radius:4px;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" style="text-align:center;color:var(--text-light);">No data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bookings by Category -->
+        <div class="admin-card" style="margin-bottom:1.5rem;">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.1rem;color:var(--uwe-dark);">Bookings by Category</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr><th>Category</th><th>Total Bookings</th><th>Share</th></tr>
+                </thead>
+                <tbody>
+                    {% set total_cat = by_category|sum(attribute='total') or 1 %}
+                    {% for c in by_category %}
+                    {% set pct = ((c.total / total_cat) * 100)|int %}
+                    <tr>
+                        <td><strong>{{ c.category }}</strong></td>
+                        <td>{{ c.total }}</td>
+                        <td style="min-width:160px;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <div style="flex:1;background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden;">
+                                    <div style="width:{{ pct }}%;background:var(--uwe-red);height:100%;border-radius:4px;"></div>
+                                </div>
+                                <span style="font-size:0.82rem;color:var(--text-light);white-space:nowrap;">{{ pct }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" style="text-align:center;color:var(--text-light);">No data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Top Spending Users -->
+        <div class="admin-card" style="margin-bottom:1.5rem;">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.1rem;color:var(--uwe-dark);">Top Spending Users</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr><th>Rank</th><th>User</th><th>Total Spent</th></tr>
+                </thead>
+                <tbody>
+                    {% for u in top_users %}
+                    <tr>
+                        <td style="font-weight:700;font-size:0.95rem;color:{% if loop.index == 1 %}#0055a4{% elif loop.index == 2 %}#374151{% else %}#6b7280{% endif %};">
+                            #{{ loop.index }}
+                        </td>
+                        <td><strong>{{ u.full_name }}</strong></td>
+                        <td><strong style="color:var(--uwe-blue,#0055a4);">£{{ "%.2f"|format(u.spent) }}</strong></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" style="text-align:center;color:var(--text-light);">No data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Upcoming Events Occupancy -->
+        <div class="admin-card" style="margin-bottom:1.5rem;">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.1rem;color:var(--uwe-dark);">Upcoming Events — Occupancy</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr><th>Event</th><th>Date</th><th>Venue</th><th>Price</th><th>Tickets Left</th><th>% Booked</th></tr>
+                </thead>
+                <tbody>
+                    {% for e in upcoming %}
+                    {% set pct = e.pct_booked|int %}
+                    <tr>
+                        <td><strong>{{ e.name }}</strong></td>
+                        <td>{{ e.date.strftime('%d %b %Y') }}</td>
+                        <td>{{ e.venue_name }}</td>
+                        <td>{% if e.price == 0 %}<span style="color:var(--free-green);font-weight:600;">Free</span>{% else %}£{{ "%.2f"|format(e.price) }}{% endif %}</td>
+                        <td>{{ e.tickets_remaining }} / {{ e.tickets_total }}</td>
+                        <td style="min-width:140px;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <div style="flex:1;background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden;">
+                                    <div style="width:{{ pct }}%;background:{% if pct >= 80 %}#cc0000{% elif pct >= 50 %}#d97706{% else %}#16a34a{% endif %};height:100%;border-radius:4px;"></div>
+                                </div>
+                                <span style="font-size:0.82rem;font-weight:600;white-space:nowrap;">{{ pct }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" style="text-align:center;color:var(--text-light);">No upcoming events.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Waiting List -->
+        <div class="admin-card">
+            <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.1rem;color:var(--uwe-dark);">Waiting List</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr><th>User</th><th>Email</th><th>Event</th><th>Joined</th><th>Notified</th></tr>
+                </thead>
+                <tbody>
+                    {% for w in waitlist %}
+                    <tr>
+                        <td>{{ w.full_name }}</td>
+                        <td>{{ w.email }}</td>
+                        <td>{{ w.event_name }}</td>
+                        <td>{{ w.joined_at.strftime('%d %b %Y %H:%M') }}</td>
+                        <td>
+                            {% if w.notified %}
+                                <span style="background:#dcfce7;color:#16a34a;border-radius:20px;padding:0.15rem 0.65rem;font-size:0.8rem;font-weight:600;">Notified</span>
+                            {% else %}
+                                <span style="background:#fee2e2;color:#cc0000;border-radius:20px;padding:0.15rem 0.65rem;font-size:0.8rem;font-weight:600;">Waiting</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" style="text-align:center;color:var(--text-light);">Waiting list is empty.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+<style>
+@media print {
+    .admin-sidebar, .no-print { display:none !important; }
+    .admin-layout { display:block !important; }
+    .admin-main { padding:0 !important; }
+}
+</style>
+
+{% endblock %}
