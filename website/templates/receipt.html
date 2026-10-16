@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed | Bristol Community Events{% endblock %}
+
+{% block content %}
+
+<style>
+@media print {
+    header, footer, .no-print { display: none !important; }
+    body { background: white !important; }
+    .booking-container { padding: 0 !important; }
+    .booking-wrapper { box-shadow: none !important; border: none !important; max-width: 100% !important; padding: 0 !important; }
+    .print-header { display: block !important; }
+    .summary-box { border: 1px solid #ddd !important; box-shadow: none !important; break-inside: avoid; }
+    .price-table td { padding: 0.5rem 0 !important; }
+}
+.print-header { display: none; }
+</style>
+
+<div class="booking-container">
+    <div class="booking-wrapper">
+
+        <!-- Only visible when printing -->
+        <div class="print-header" style="text-align:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #C3002F;">
+            <h2 style="font-size:1.4rem;color:#C3002F;margin:0;">Bristol Community Events</h2>
+            <p style="font-size:0.85rem;color:#666;margin:0.25rem 0 0;">Official Booking Receipt &mdash; events@example.com</p>
+        </div>
+
+        <div style="text-align:center;margin-bottom:1.5rem;" class="no-print">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--free-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="56" height="56" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+
+        <div style="text-align:center;margin-bottom:1.5rem;">
+            <h1 style="margin-top:.75rem;">Booking Confirmed!</h1>
+            <p style="color:var(--text-light);">Your booking reference is <strong>{{ bk.reference }}</strong></p>
+        </div>
+
+        <div class="summary-box">
+            <h3>{{ bk.event_name }}</h3>
+            <p><strong>Date:</strong> {{ bk.event_date.strftime('%A %d %B %Y') }}{% if bk.event_time %} at {{ bk.event_time|timeformat }}{% endif %}</p>
+            <p><strong>Venue:</strong> {{ bk.venue_name }}</p>
+            <p><strong>Booked by:</strong> {{ bk.user_name }} ({{ bk.user_email }})</p>
+        </div>
+
+        <div class="summary-box" style="margin-top:1rem;">
+            <h3>Booking Details</h3>
+            <table class="price-table">
+                <tbody>
+                    <tr>
+                        <td>Reference</td>
+                        <td><strong>{{ bk.reference }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Tickets</td>
+                        <td>{{ bk.quantity }}</td>
+                    </tr>
+                    <tr>
+                        <td>Base price per ticket</td>
+                        <td>£{{ "%.2f"|format(bk.base_price) }}</td>
+                    </tr>
+                    {% if bk.advance_discount_pct > 0 %}
+                    <tr class="discount-row">
+                        <td>Advance booking discount ({{ bk.advance_discount_pct }}%)</td>
+                        <td>− £{{ "%.2f"|format(bk.base_price * bk.quantity * bk.advance_discount_pct / 100) }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if bk.is_student %}
+                    <tr class="discount-row">
+                        <td>Student discount (10%)</td>
+                        <td>− £{{ "%.2f"|format(bk.base_price * bk.quantity * (1 - bk.advance_discount_pct / 100) * 0.10) }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="total-row">
+                        <td>Total paid</td>
+                        <td>{% if bk.total_price == 0 %}Free{% else %}£{{ "%.2f"|format(bk.total_price) }}{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td>Status</td>
+                        <td><span class="badge-{{ bk.status }}">{{ bk.status|capitalize }}</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;" class="no-print">
+            <a href="{{ url_for('my_bookings') }}" class="btn btn-primary">View My Bookings</a>
+            <button onclick="window.print()" class="btn btn-outline">Download Receipt</button>
+            <a href="{{ url_for('events') }}" class="btn btn-outline">Browse More Events</a>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+

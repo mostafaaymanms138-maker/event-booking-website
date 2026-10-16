@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}Manage Users | Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+
+    <aside class="admin-sidebar">
+        <h2>Admin Panel</h2>
+        <nav>
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin_events') }}">Events</a>
+            <a href="{{ url_for('admin_bookings') }}">Bookings</a>
+            <a href="{{ url_for('admin_users') }}" class="active">Users</a>
+            <a href="{{ url_for('admin_venues') }}">Venues</a>
+            <a href="{{ url_for('admin_reports') }}">Reports</a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+            <h1 style="margin:0;flex:1;">Manage Users</h1>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary" style="font-size:0.9rem;">Back to Dashboard</a>
+        </div>
+
+        <!-- Search bar -->
+        <div class="admin-card" style="padding:1rem 1.25rem;margin-bottom:1rem;">
+            <input type="text" id="user-search" class="form-control"
+                   placeholder="Search users by name, email, or user type..."
+                   oninput="filterUsers()"
+                   style="max-width:600px;margin:0;">
+        </div>
+
+        <div class="admin-card">
+            <table class="admin-table" id="users-table">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>User Type</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr class="user-row"
+                        data-name="{{ u.full_name|lower }}"
+                        data-email="{{ u.email|lower }}"
+                        data-type="{{ 'student' if u.is_student else ('admin' if u.is_admin else 'customer') }}">
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.full_name }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            {% if u.is_admin %}
+                                <strong style="color:var(--uwe-red);">Admin</strong>
+                            {% elif u.is_student %}
+                                <span style="color:var(--free-green);font-weight:600;">Student</span>
+                            {% else %}
+                                Customer
+                            {% endif %}
+                        </td>
+                        <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
+                        <td>
+                            {% if not u.is_admin %}
+                            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                                <button type="button"
+                                    onclick="openDeleteModal('{{ u.id }}', '{{ u.full_name|replace("'", "\\'") }}')"
+                                    style="background:#dc2626;color:white;border:none;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;">Delete</button>
+                                <button type="button"
+                                    onclick="openEditModal('{{ u.id }}', '{{ u.full_name|replace("'", "\\'") }}', '{{ u.email }}', {{ 1 if u.is_student else 0 }})"
+                                    style="background:#d97706;color:white;border:none;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;">Update</button>
+                            </div>
+                            {% else %}
+                            &mdash;
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" style="text-align:center;color:var(--text-light);">No users found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p id="no-results" style="display:none;text-align:center;color:var(--text-light);padding:1.5rem 0;">No users match your search.</p>
+        </div>
+
+    </main>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:12px;padding:2rem;max-width:420px;width:90%;box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+        <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.75rem;color:var(--uwe-dark);">Delete User</h2>
+        <p style="color:var(--text-light);margin-bottom:1rem;">Are you sure you want to delete this user? This action cannot be undone.</p>
+        <div style="background:var(--bg-light);border-radius:8px;padding:0.85rem 1rem;margin-bottom:1.5rem;font-size:0.9rem;">
+            <strong id="delete-name"></strong>
+        </div>
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+            <button type="button" onclick="closeDeleteModal()"
+                    style="background:var(--bg-light);color:var(--text-dark);border:none;padding:0.6rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
+            <form id="delete-form" method="POST" style="margin:0;">
+                <button type="submit"
+                        style="background:#dc2626;color:white;border:none;padding:0.6rem 1.5rem;border-radius:8px;font-weight:600;cursor:pointer;">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Update User Modal -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:12px;padding:2rem;max-width:480px;width:90%;box-shadow:0 20px 40px rgba(0,0,0,0.2);position:relative;">
+        <!-- X close button -->
+        <button type="button" onclick="closeEditModal()"
+                style="position:absolute;top:1rem;right:1rem;background:none;border:1px solid #d1d5db;border-radius:6px;width:2rem;height:2rem;font-size:1rem;cursor:pointer;color:var(--text-light);display:flex;align-items:center;justify-content:center;">&times;</button>
+        <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:1.5rem;color:var(--uwe-dark);">Update User</h2>
+        <form id="edit-form" method="POST">
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" id="edit-firstname" name="first_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" id="edit-lastname" name="last_name" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="edit-email" name="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>New Password <span style="font-size:0.8rem;color:var(--text-light);font-weight:400;">(leave blank to keep current)</span></label>
+                <div style="position:relative;">
+                    <input type="password" id="edit-pwd" name="new_password" class="form-control"
+                           placeholder="Minimum 8 characters" style="padding-right:5rem;"
+                           oninput="checkEditStrength(this.value)">
+                    <button type="button" id="edit-pwd-btn" onclick="toggleEditPwd()"
+                            style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:1px solid var(--border-color);border-radius:6px;padding:0.2rem 0.65rem;font-size:0.8rem;cursor:pointer;color:var(--text-light);">Show</button>
+                </div>
+                <p id="edit-strength" style="font-size:0.8rem;margin-top:0.35rem;"></p>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:0.75rem;">
+                <input type="checkbox" id="edit-student" name="is_student" style="width:1.1rem;height:1.1rem;cursor:pointer;">
+                <label for="edit-student" style="margin:0;font-weight:500;cursor:pointer;">UWE Student account</label>
+            </div>
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.5rem;">
+                <button type="button" onclick="closeEditModal()"
+                        style="background:var(--bg-light);color:var(--text-dark);border:none;padding:0.6rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;">Close</button>
+                <button type="submit"
+                        style="background:var(--uwe-blue,#0055a4);color:white;border:none;padding:0.6rem 1.5rem;border-radius:8px;font-weight:600;cursor:pointer;">Update User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function filterUsers() {
+    var q = document.getElementById('user-search').value.toLowerCase();
+    var rows = document.querySelectorAll('.user-row');
+    var visible = 0;
+    rows.forEach(function(row) {
+        var match = row.dataset.name.includes(q) || row.dataset.email.includes(q) || row.dataset.type.includes(q);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+    document.getElementById('no-results').style.display = visible === 0 ? 'block' : 'none';
+}
+
+function openDeleteModal(uid, name) {
+    document.getElementById('delete-name').textContent  = name;
+    document.getElementById('delete-form').action       = '/admin/users/delete/' + uid;
+    document.getElementById('delete-modal').style.display = 'flex';
+}
+function closeDeleteModal() {
+    document.getElementById('delete-modal').style.display = 'none';
+}
+
+function openEditModal(uid, name, email, isStudent) {
+    var parts = name.split(' ');
+    var first = parts[0] || '';
+    var last  = parts.slice(1).join(' ') || '';
+    document.getElementById('edit-firstname').value     = first;
+    document.getElementById('edit-lastname').value      = last;
+    document.getElementById('edit-email').value         = email;
+    document.getElementById('edit-student').checked     = isStudent === 1;
+    document.getElementById('edit-pwd').value           = '';
+    document.getElementById('edit-strength').textContent = '';
+    document.getElementById('edit-form').action         = '/admin/users/edit/' + uid;
+    document.getElementById('edit-modal').style.display = 'flex';
+}
+function closeEditModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+}
+function toggleEditPwd() {
+    var input = document.getElementById('edit-pwd');
+    var btn   = document.getElementById('edit-pwd-btn');
+    if (input.type === 'password') { input.type = 'text';     btn.textContent = 'Hide'; }
+    else                           { input.type = 'password'; btn.textContent = 'Show'; }
+}
+function checkEditStrength(val) {
+    var label = document.getElementById('edit-strength');
+    if (!val) { label.textContent = ''; return; }
+    var strong = val.length >= 10 && /[A-Z]/.test(val) && /[0-9]/.test(val) && /[^A-Za-z0-9]/.test(val);
+    var medium = val.length >= 8  && /[A-Z]/.test(val) && /[0-9]/.test(val);
+    if (strong)      { label.textContent = 'Password strength: Strong'; label.style.color = '#16a34a'; }
+    else if (medium) { label.textContent = 'Password strength: Medium'; label.style.color = '#d97706'; }
+    else             { label.textContent = 'Password strength: Weak';   label.style.color = '#dc2626'; }
+}
+</script>
+
+{% endblock %}
+
+
