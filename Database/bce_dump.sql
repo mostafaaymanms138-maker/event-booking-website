@@ -1,5 +1,5 @@
--- Sanitised schema-only database for Bristol Community Events.
--- Contains table definitions only; no account or sample data.
+-- Bristol Community Events database schema and sample event data.
+-- Includes example categories, venues and events; no user accounts.
 CREATE DATABASE IF NOT EXISTS `bce`;
 USE `bce`;
 SET FOREIGN_KEY_CHECKS = 0;
