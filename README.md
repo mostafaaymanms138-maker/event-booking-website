@@ -1,30 +1,33 @@
 # Bristol Community Events
 
-Bristol Community Events is a full-stack web application for discovering local events and managing ticket bookings. Built with Python, Flask, and MySQL, the project includes customer booking workflows and an administrative interface for managing event operations.
+Bristol Community Events is a full-stack web application for discovering local events and managing ticket bookings. Built with Python, Flask, and MySQL, it provides customer booking features and an administrative interface for managing event operations.
 
-Developed as a university project at the University of the West of England (UWE) and shared as part of my software development portfolio.
+Developed as a university project at the University of the West of England (UWE Bristol).
 
-## Key features
+## Features
 
 ### Event discovery and booking
 
-- Browse events and filter by category, date, and free-entry availability.
+- Browse and filter events by category, date, and free-entry availability.
 - View event details and book tickets.
-- Apply advance-booking discounts and a UWE student discount.
-- View booking history, download booking receipts, and cancel bookings.
+- Apply advance-booking discounts of 5% to 20%, depending on how far ahead the booking is made.
+- Apply a 10% UWE student discount.
+- Use simulated payment with card validation.
+- View booking history, download receipts, and cancel bookings.
 - Join a waiting list when an event is fully booked.
 
 ### Administration
 
 - Manage events, venues, users, and bookings.
-- Review reports, including sales and top-customer summaries.
-- Apply a price reduction to events with low ticket sales.
+- View reports, including sales and top-customer summaries.
+- Apply a 25% price reduction to events with low ticket sales.
 
 ### Implementation
 
 - Responsive interface for desktop, tablet, and mobile.
 - Password hashing with Werkzeug.
-- Parameterised SQL queries and role-based access controls.
+- Parameterised SQL queries.
+- Role-based access control for customer and administrator pages.
 - Cookie consent banner.
 
 ## Technology
@@ -38,15 +41,19 @@ Developed as a university project at the University of the West of England (UWE)
 
 ```text
 bristol-community-events/
-├── app.py
-├── requirements.txt
-├── bce_dump.sql
-├── templates/
-│   ├── admin/
-│   └── [application page templates]
-├── static/
-│   └── style.css
-└── README.md
+├── README.md
+├── .gitignore
+├── Database/
+│   ├── bce_dump.sql
+│   └── ERD.png
+└── website/
+    ├── app.py
+    ├── requirements.txt
+    ├── static/
+    │   └── style.css
+    └── templates/
+        ├── admin/
+        └── [application page templates]
 ```
 
 ## Run locally
@@ -55,52 +62,48 @@ bristol-community-events/
 
 - Python 3.10 or later
 - MySQL Server
-- Packages listed in `requirements.txt`
 
 ### Setup
 
-1. Clone or download the repository and open a terminal in the project folder.
-2. Install the dependencies:
+1. Clone the repository and open a terminal in the project folder.
+2. Import the database dump:
 
    ```bash
+   mysql -u <your-mysql-user> -p < Database/bce_dump.sql
+   ```
+
+   Enter your MySQL password when prompted. The dump creates the `bce` database and its tables.
+
+3. Install the Python dependencies:
+
+   ```bash
+   cd website
    pip install -r requirements.txt
    ```
 
-3. Start MySQL and import the database dump:
-
-   ```bash
-   mysql -u <your-mysql-user> -p < bce_dump.sql
-   ```
-
-   The dump creates the `bce` database and its tables. Enter your local MySQL password when prompted.
-
-4. Configure the database connection in `app.py` for your local environment. Do not commit database passwords, secret keys, or other credentials to the repository.
+4. Configure the database connection for your local MySQL setup. Do not publish passwords, secret keys, or other credentials.
 5. Start the application:
 
    ```bash
    python app.py
    ```
 
-6. Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in a browser.
+6. Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+
+## Database diagram
+
+![Entity relationship diagram](Database/ERD.png)
 
 ## Admin access
 
-The application includes an administrative panel for authorised accounts. Admin credentials are not published in this repository. Configure a local test account for development or assessment.
+The application includes an administrator panel for authorised accounts. Login credentials are not published in this repository.
 
 ## Current limitations
 
 - Payments are simulated; no external payment provider is connected.
-- Waiting-list status is stored in the database, but notifications are not sent by email.
+- Waiting-list status is stored in the database, but email notifications are not sent.
 - Multi-day event bookings are stored in the database but are not available through the booking interface.
 
-## Screenshots
+## Author
 
-Add screenshots of the event listing, booking flow, and admin panel here when available. Store image files in a `screenshots/` folder and reference them like this:
-
-```markdown
-![Event listing](screenshots/events.png)
-```
-
-## Academic and portfolio use
-
-This project was developed for university coursework and is presented here to demonstrate my work. Please use it for learning and inspiration, and follow your institution’s academic integrity guidance.
+**Mostafa Abdelkarim** · BSc (Hons) Computer Science, UWE Bristol · [LinkedIn](https://www.linkedin.com/in/mostafa-ayman-8045a7399/)
