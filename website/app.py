@@ -313,11 +313,9 @@ def login():
         cur.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cur.fetchone()
         cur.close(); db.close()
-        print(f"[LOGIN] Attempting login for email: {email}, user found: {user is not None}")
 
         # check_password_hash compares the submitted password against the stored hash
         if user and check_password_hash(user['password_hash'], pwd):
-            print(f"[LOGIN] Login successful for user_id: {user['id']}, is_admin: {user['is_admin']}")
             session['user_id']    = user['id']
             session['user_name']  = user['full_name']
             session['is_student'] = bool(user['is_student'])
