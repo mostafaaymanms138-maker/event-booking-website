@@ -51,7 +51,21 @@ event-booking-website/
         │   ├── reports.html
         │   ├── users.html
         │   └── venues.html
-        └── customer and shared page templates
+        ├── 403.html
+        ├── 404.html
+        ├── about.html
+        ├── account.html
+        ├── base.html
+        ├── booking.html
+        ├── contact.html
+        ├── event_detail.html
+        ├── events.html
+        ├── index.html
+        ├── login.html
+        ├── my_bookings.html
+        ├── payment.html
+        ├── receipt.html
+        └── register.html
 ```
 
 ## Run locally
