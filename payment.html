@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Payment — {{ pb.event_name }} | Bristol Community Events{% endblock %}
+
+{% block content %}
+
+<div class="booking-container">
+    <div class="booking-wrapper">
+
+        <h1>Payment Details</h1>
+        <p style="color:var(--text-light);margin-bottom:1.5rem;">Complete your payment to confirm your booking.</p>
+
+        <div class="summary-box" style="margin-bottom:1.5rem;">
+            <h3>Order Summary</h3>
+            <p><strong>Event:</strong> {{ pb.event_name }}</p>
+            <p><strong>Venue:</strong> {{ pb.venue_name }}</p>
+            <p><strong>Tickets:</strong> {{ pb.quantity }}</p>
+            {% if pb.advance_pct > 0 %}
+            <p><strong>Advance discount:</strong> {{ pb.advance_pct }}% applied</p>
+            {% endif %}
+            {% if pb.is_student %}
+            <p><strong>Student discount:</strong> 10% applied</p>
+            {% endif %}
+            <p style="font-size:1.2rem;font-weight:700;margin-top:0.75rem;color:var(--uwe-blue);">
+                Total: {% if pb.total == 0 %}Free{% else %}£{{ "%.2f"|format(pb.total) }}{% endif %}
+            </p>
+        </div>
+
+        {% if pb.total > 0 %}
+
+        <div class="payment-secure-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Secure payment — your card details are never stored
+        </div>
+
+        <form method="POST" action="{{ url_for('payment') }}" id="payment-form" novalidate>
+
+            <div class="form-group">
+                <label for="card_name">Name on Card</label>
+                <input type="text" id="card_name" name="card_name" class="form-control"
+                       placeholder="e.g. John Smith" autocomplete="cc-name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="card_number">Card Number</label>
+                <div class="card-input-wrapper">
+                    <input type="text" id="card_number" name="card_number" class="form-control"
+                           placeholder="1234 5678 9012 3456" maxlength="19"
+                           autocomplete="cc-number" required>
+                    <div class="card-icons">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="28" height="20" aria-hidden="true"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="form-group">
+                    <label for="expiry">Expiry Date</label>
+                    <input type="text" id="expiry" name="expiry" class="form-control"
+                           placeholder="MM/YY" maxlength="5"
+                           autocomplete="cc-exp" required>
+                </div>
+                <div class="form-group">
+                    <label for="cvv">CVV / Security Code</label>
+                    <input type="text" id="cvv" name="cvv" class="form-control"
+                           placeholder="123" maxlength="4"
+                           autocomplete="cc-csc" required>
+                </div>
+            </div>
+
+            <div class="payment-demo-notice">
+                <strong>Demo mode:</strong> Use any 16-digit number, MM/YY expiry, and 3-digit CVV. No real payment is taken.
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" id="pay-btn">
+                Pay £{{ "%.2f"|format(pb.total) }} &amp; Confirm Booking
+            </button>
+
+        </form>
+
+        {% else %}
+
+        <form method="POST" action="{{ url_for('payment') }}">
+            <input type="hidden" name="card_number" value="0000000000000000">
+            <input type="hidden" name="expiry" value="01/99">
+            <input type="hidden" name="cvv" value="000">
+            <button type="submit" class="btn btn-primary btn-full">Confirm Free Booking</button>
+        </form>
+
+        {% endif %}
+
+        <a href="{{ url_for('events') }}" class="back-link" style="margin-top:1rem;display:inline-block;">
+            &larr; Cancel and return to events
+        </a>
+
+    </div>
+</div>
+
+<script>
+// Auto-format card number with spaces (1234 5678 9012 3456)
+document.getElementById('card_number').addEventListener('input', function () {
+    var v = this.value.replace(/\D/g, '').substring(0, 16);
+    this.value = v.replace(/(.{4})/g, '$1 ').trim();
+});
+
+// Auto-format expiry MM/YY
+document.getElementById('expiry') && document.getElementById('expiry').addEventListener('input', function () {
+    var v = this.value.replace(/\D/g, '').substring(0, 4);
+    if (v.length >= 3) v = v.substring(0, 2) + '/' + v.substring(2);
+    this.value = v;
+});
+
+// Disable pay button after submit to prevent double-clicks
+var form = document.getElementById('payment-form');
+if (form) {
+    form.addEventListener('submit', function () {
+        var btn = document.getElementById('pay-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Processing…'; }
+    });
+}
+</script>
+
+{% endblock %}
+
+

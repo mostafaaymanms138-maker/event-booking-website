@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}My Bookings | Bristol Community Events{% endblock %}
+
+{% block content %}
+
+<div class="page-banner">
+    <h1>My Bookings</h1>
+    <p>All your past and upcoming bookings in one place.</p>
+</div>
+
+<div class="events-container" style="padding:2rem 1.5rem;max-width:1100px;margin:0 auto;">
+
+    {% if bookings %}
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Venue</th>
+                    <th>Tickets</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr>
+                    <td><strong>{{ b.reference }}</strong></td>
+                    <td>{{ b.event_name }}</td>
+                    <td>{{ b.event_date.strftime('%d %b %Y') }}</td>
+                    <td>{{ b.venue_name }}</td>
+                    <td>{{ b.quantity }}</td>
+                    <td>{% if b.total_price == 0 %}Free{% else %}£{{ "%.2f"|format(b.total_price) }}{% endif %}</td>
+                    <td>
+                        {% if b.status == 'confirmed' %}
+                            <span style="color:var(--free-green);font-weight:600;">Confirmed</span>
+                        {% elif b.status == 'cancelled' %}
+                            <span style="color:var(--uwe-red);font-weight:600;">Cancelled
+                            {% if b.cancellation_charge and b.cancellation_charge > 0 %}
+                                (charge: £{{ "%.2f"|format(b.cancellation_charge) }})
+                            {% endif %}
+                            </span>
+                        {% else %}
+                            {{ b.status|capitalize }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.status == 'confirmed' and b.event_date >= today %}
+                        <button type="button" class="btn btn-xs btn-del"
+                            onclick="openCancelModal('{{ b.id }}', '{{ b.reference }}', '{{ b.event_name }}', '{% if b.total_price == 0 %}Free{% else %}£{{ "%.2f"|format(b.total_price) }}{% endif %}')">
+                            Cancel
+                        </button>
+                        {% else %}
+                            &mdash;
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:4rem 0;color:var(--text-light);">
+        <p>You have no bookings yet.</p>
+        <a href="{{ url_for('events') }}" class="btn btn-primary" style="margin-top:1rem;">Browse Events</a>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Cancellation Modal -->
+<div id="cancel-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:12px;padding:2rem;max-width:440px;width:90%;box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+        <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;color:var(--uwe-dark);">Confirm Cancellation</h2>
+        <p style="color:var(--text-light);margin-bottom:1rem;">Are you sure you want to cancel this booking?</p>
+        <div style="background:var(--bg-light);border-radius:8px;padding:1rem;margin-bottom:1.25rem;font-size:0.9rem;">
+            <p style="margin:0.25rem 0;"><strong>Reference:</strong> <span id="modal-ref"></span></p>
+            <p style="margin:0.25rem 0;"><strong>Event:</strong> <span id="modal-event"></span></p>
+            <p style="margin:0.25rem 0;"><strong>Total Paid:</strong> <span id="modal-total"></span></p>
+        </div>
+        <p style="font-size:0.82rem;color:var(--uwe-red);margin-bottom:1.5rem;">
+            A cancellation charge may apply depending on how close the event date is.
+        </p>
+        <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+            <button onclick="closeCancelModal()" style="background:var(--bg-light);color:var(--text-dark);border:none;padding:0.6rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;">Close</button>
+            <form id="cancel-form" method="POST">
+                <button type="submit" style="background:var(--uwe-red);color:white;border:none;padding:0.6rem 1.5rem;border-radius:8px;font-weight:600;cursor:pointer;">Confirm Cancel</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openCancelModal(bid, ref, eventName, total) {
+    document.getElementById('modal-ref').textContent   = ref;
+    document.getElementById('modal-event').textContent = eventName;
+    document.getElementById('modal-total').textContent = total;
+    document.getElementById('cancel-form').action      = '/cancel/' + bid;
+    var modal = document.getElementById('cancel-modal');
+    modal.style.display = 'flex';
+}
+function closeCancelModal() {
+    document.getElementById('cancel-modal').style.display = 'none';
+}
+</script>
+
+{% endblock %}
+
+
