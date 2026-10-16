@@ -1,46 +1,38 @@
 # Bristol Community Events
 
-Bristol Community Events is a full-stack web application for discovering local events and managing ticket bookings. Built with Python, Flask, and MySQL, it provides customer booking features and an administrative interface for managing event operations.
-
-Developed as a university project at the University of the West of England (UWE Bristol).
+Bristol Community Events is a Flask and MySQL web application for discovering local events and managing ticket bookings. It was developed as a university project at the University of the West of England (UWE Bristol).
 
 ## Features
 
 ### Event discovery and booking
-
-- Browse and filter events by category, date, and free-entry availability.
+- Browse events and filter by category, date, and free entry.
 - View event details and book tickets.
-- Apply advance-booking discounts of 5% to 20%, depending on how far ahead a booking is made.
-- Apply a 10% UWE student discount.
-- Use simulated payment with card validation.
-- View booking history, download receipts, and cancel bookings.
-- Join a waiting list when an event is fully booked.
+- Apply advance-booking discounts and a UWE student discount.
+- Complete a simulated payment form with basic card-field validation.
+- View booking history, download receipts, cancel bookings, and join a waiting list for sold-out events.
 
 ### Administration
-
 - Manage events, venues, users, and bookings.
-- View reports, including sales and top-customer summaries.
-- Apply a 25% price reduction to events with low ticket sales.
+- View sales, booking, venue, and customer reports.
+- Apply a 25% price reduction to an event.
 
 ### Implementation
-
-- Responsive interface for desktop, tablet, and mobile.
+- Responsive HTML, CSS, and JavaScript interface.
 - Password hashing with Werkzeug.
-- Parameterised SQL queries.
-- Role-based access control for customer and administrator pages.
-- Cookie consent banner.
+- Parameterised SQL queries and role checks for admin pages.
+- Flask sessions configured with an environment-based secret key.
 
 ## Technology
-
 - Python 3.10+
-- Flask
-- MySQL
+- Flask 3.1
+- MySQL 8.0+
+- MySQL Connector/Python
 - HTML, CSS, and JavaScript
 
 ## Project structure
 
 ```text
-bristol-community-events/
+event-booking-website/
 ├── README.md
 ├── .gitignore
 ├── Database/
@@ -53,53 +45,84 @@ bristol-community-events/
     │   └── style.css
     └── templates/
         ├── admin/
-        └── [application page templates]
+        │   ├── bookings.html
+        │   ├── dashboard.html
+        │   ├── events.html
+        │   ├── reports.html
+        │   ├── users.html
+        │   └── venues.html
+        └── customer and shared page templates
 ```
 
 ## Run locally
 
 ### Requirements
-
 - Python 3.10 or later
-- MySQL Server
+- MySQL Server 8.0 or later
 
-### Database setup
+### 1. Set up the database
 
-The repository's `Database/bce_dump.sql` defines the project tables and creates the `bce` database. It is schema-only and contains no user, booking, payment, or event sample records. Add fictional test data locally if you want to demonstrate the application with populated pages.
+Open `Database/bce_dump.sql` in MySQL Workbench, connect to your local MySQL server, and run the complete script. It creates the `bce` database and its tables, then adds three example categories, two venues, and three future-dated events.
 
-To set up the database with MySQL Workbench:
+The script includes no user accounts, bookings, or payment records. Import it once into a fresh database; its sample rows use fixed IDs and are not intended to be inserted repeatedly.
 
-1. Open `Database/bce_dump.sql` in MySQL Workbench.
-2. Connect to your local MySQL server.
-3. Run the complete SQL script to create the `bce` database and its tables.
+### 2. Install the Python dependencies
 
-### Start the application
+From the repository folder, open PowerShell and run:
 
-1. Install the Python dependencies:
+```powershell
+cd website
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
 
-   ```bash
-   cd website
-   pip install -r requirements.txt
+If PowerShell blocks virtual-environment activation, use Command Prompt and run `.venv\Scripts\activate.bat`, then install the requirements as above.
+
+### 3. Configure and start the application
+
+In the same PowerShell window, set the connection details for your local MySQL account. Replace the example password with your own local MySQL password:
+
+```powershell
+$env:DB_HOST = "localhost"
+$env:DB_USER = "root"
+$env:DB_PASSWORD = "your-local-MySQL-password"
+$env:DB_NAME = "bce"
+$env:FLASK_SECRET_KEY = (python -c "import secrets; print(secrets.token_hex(32))")
+python app.py
+```
+
+These settings apply only to that PowerShell window. The app reads them from environment variables; do not put real passwords or secret keys in the repository. Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+
+### Local admin account
+
+There are no admin credentials in the repository or sample database. To create a local admin account:
+
+1. Register a normal account through the website.
+2. In MySQL Workbench, run this query, replacing the example email with the email you registered:
+
+   ```sql
+   USE bce;
+   UPDATE users SET is_admin = 1 WHERE email = 'your-email@example.com';
    ```
 
-2. Configure the database connection and Flask session key for your local environment. Before publishing, remove hard-coded credentials and secrets from `app.py` and load them from environment variables instead. Never commit real passwords or secret keys.
-3. Start the application:
+3. Log out and back in to load the admin role.
 
-   ```bash
-   python app.py
-   ```
+Do not publish your personal account details or password.
 
-4. Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+## Limitations and testing status
+- Payment is simulated; no payment provider is connected and no real payment is taken.
+- Card fields receive basic format checks only.
+- Waiting-list entries are recorded, but no email notifications are sent.
+- Multi-day event fields exist in the database, but multi-day bookings are not available through the interface.
+- The forms do not currently include CSRF protection; the project is a coursework demonstration, not a live booking service.
+- No automated test suite is included.
 
-## Admin access
-
-The application includes an administrator panel for authorised accounts. No login credentials are included in this repository.
-
-## Current limitations
-
-- Payments are simulated; no external payment provider is connected.
-- Waiting-list status is stored in the database, but email notifications are not sent.
-- Multi-day event bookings are stored in the database but are not available through the booking interface.
+## Future improvements
+- Add automated tests for booking, cancellation, and admin workflows.
+- Add CSRF protection and strengthen server-side form validation.
+- Integrate a payment provider and email notifications.
+- Implement multi-day booking through the interface.
 
 ## Database diagram
 
