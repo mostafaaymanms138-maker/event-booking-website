@@ -96,6 +96,7 @@
         <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
             <button onclick="closeCancelModal()" style="background:var(--bg-light);color:var(--text-dark);border:none;padding:0.6rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;">Close</button>
             <form id="cancel-form" method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" style="background:var(--uwe-red);color:white;border:none;padding:0.6rem 1.5rem;border-radius:8px;font-weight:600;cursor:pointer;">Confirm Cancel</button>
             </form>
         </div>

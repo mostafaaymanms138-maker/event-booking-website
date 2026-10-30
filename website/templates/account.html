@@ -25,6 +25,7 @@
     <div style="background:white;border-radius:12px;padding:1.75rem;box-shadow:var(--shadow);">
         <h2 style="text-align:center;font-size:1.2rem;font-weight:700;margin-bottom:1.25rem;color:var(--uwe-dark);">Update Information</h2>
         <form method="POST" action="{{ url_for('account') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="update_profile">
             <div class="form-group">
                 <label>Full Name</label>
@@ -42,6 +43,7 @@
     <div style="background:white;border-radius:12px;padding:1.75rem;box-shadow:var(--shadow);">
         <h2 style="text-align:center;font-size:1.2rem;font-weight:700;margin-bottom:1.25rem;color:var(--uwe-dark);">Change Password</h2>
         <form method="POST" action="{{ url_for('account') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="change_password">
             <div class="form-group">
                 <label>Current Password</label>

@@ -23,6 +23,7 @@
         <div class="admin-card" style="margin-bottom:1.5rem;">
             <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;color:var(--uwe-dark);">Add New Venue</h2>
             <form method="POST" action="{{ url_for('admin_add_venue') }}" class="admin-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
                     <div class="form-group" style="margin:0;">
                         <label>Venue Name *</label>
@@ -74,6 +75,7 @@
                                 </button>
                                 <form method="POST" action="{{ url_for('admin_delete_venue', vid=v.id) }}"
                                       onsubmit="return confirm('Delete venue {{ v.name }}? This only works if no events are assigned to it.')">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-xs btn-del">Delete</button>
                                 </form>
                             </div>
@@ -95,6 +97,7 @@
                 style="position:absolute;top:1rem;right:1rem;background:none;border:1px solid #d1d5db;border-radius:6px;width:2rem;height:2rem;font-size:1rem;cursor:pointer;color:var(--text-light);">&times;</button>
         <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:1.5rem;color:var(--uwe-dark);">Edit Venue</h2>
         <form id="edit-form" method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label>Venue Name *</label>
                 <input type="text" id="edit-name" name="name" class="form-control" required>

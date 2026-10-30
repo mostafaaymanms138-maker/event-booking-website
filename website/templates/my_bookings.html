@@ -69,6 +69,31 @@
     </div>
     {% endif %}
 
+    {% if my_waitlist %}
+    <h2 style="font-size:1.2rem;font-weight:700;margin:2rem 0 1rem;color:var(--uwe-dark);">My Waiting Lists</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead><tr><th>Event</th><th>Venue</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for w in my_waitlist %}
+                <tr>
+                    <td><a href="{{ url_for('event_detail', eid=w.event_id) }}">{{ w.event_name }}</a></td>
+                    <td>{{ w.venue_name }}</td>
+                    <td>{{ w.event_date.strftime('%d %b %Y') }}</td>
+                    <td>
+                        {% if w.notified %}
+                        <strong style="color:var(--uwe-red);">A place has opened. Book now before it goes.</strong>
+                        {% else %}
+                        Waiting
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
 </div>
 
 <!-- Cancellation Modal -->
@@ -87,6 +112,7 @@
         <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
             <button onclick="closeCancelModal()" style="background:var(--bg-light);color:var(--text-dark);border:none;padding:0.6rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;">Close</button>
             <form id="cancel-form" method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" style="background:var(--uwe-red);color:white;border:none;padding:0.6rem 1.5rem;border-radius:8px;font-weight:600;cursor:pointer;">Confirm Cancel</button>
             </form>
         </div>
