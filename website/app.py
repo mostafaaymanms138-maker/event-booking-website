@@ -5,6 +5,7 @@
 # for the booking platform.
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, abort
+from flask_wtf.csrf import CSRFProtect                      # CSRF tokens on every POST form
 import mysql.connector                                      # to connect to MySQL
 from werkzeug.security import generate_password_hash, check_password_hash  # for safe password storage
 from datetime import datetime, date                        # used in discount and cancellation calculations
@@ -15,6 +16,9 @@ import secrets                                             # for generating rand
 app = Flask(__name__)
 # Secret key is needed for Flask sessions to work securely
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+
+# Rejects any POST that does not carry a valid CSRF token (every form includes one)
+csrf = CSRFProtect(app)
 
 
 # Database connection
@@ -95,6 +99,22 @@ def calc_total(base_price, quantity, advance_pct, is_student):
 def gen_reference():
     # Generates a unique booking reference like BCE-2026-47832
     return f"BCE-{date.today().year}-{secrets.randbelow(90000) + 10000}"
+
+
+def promote_waitlist(cur, event_id):
+    # Called when a cancellation frees up tickets. Marks the first person still
+    # waiting as notified so the site tells them a place is available.
+    # Returns that user's id, or None if nobody is waiting.
+    cur.execute("""
+        SELECT user_id FROM waiting_list
+        WHERE event_id=%s AND notified=0 ORDER BY joined_at ASC LIMIT 1
+    """, (event_id,))
+    nxt = cur.fetchone()
+    if not nxt:
+        return None
+    cur.execute("UPDATE waiting_list SET notified=1 WHERE user_id=%s AND event_id=%s",
+                (nxt['user_id'], event_id))
+    return nxt['user_id']
 
 
 # Custom Jinja2 filter for time formatting
@@ -452,6 +472,10 @@ def payment():
         # Reduce the available ticket count
         cur.execute("UPDATE events SET tickets_remaining=tickets_remaining-%s WHERE id=%s",
                     (pb['quantity'], pb['event_id']))
+
+        # They no longer need their waiting-list place once they have a booking
+        cur.execute("DELETE FROM waiting_list WHERE user_id=%s AND event_id=%s",
+                    (session['user_id'], pb['event_id']))
         db.commit()
 
         # Get the new booking ID - fall back to querying by reference if lastrowid is 0
@@ -528,7 +552,7 @@ def my_bookings():
     """, (session['user_id'],))
     bookings = [floatify(b, 'total_price', 'cancellation_charge') for b in cur.fetchall()]
     cur.execute("""
-        SELECT w.joined_at, w.notified, e.name AS event_name, e.date AS event_date, v.name AS venue_name
+        SELECT w.joined_at, w.notified, e.id AS event_id, e.name AS event_name, e.date AS event_date, v.name AS venue_name
         FROM waiting_list w
         JOIN events e ON w.event_id=e.id
         JOIN venues v ON e.venue_id=v.id
@@ -561,15 +585,8 @@ def cancel_booking(bid):
     cur.execute("UPDATE events SET tickets_remaining=tickets_remaining+%s WHERE id=%s",
                 (bk['quantity'], bk['event_id']))
 
-    # If someone is on the waiting list, notify the first person in line
-    cur.execute("""
-        SELECT user_id FROM waiting_list
-        WHERE event_id=%s AND notified=0 ORDER BY joined_at ASC LIMIT 1
-    """, (bk['event_id'],))
-    nxt = cur.fetchone()
-    if nxt:
-        cur.execute("UPDATE waiting_list SET notified=1 WHERE user_id=%s AND event_id=%s",
-                    (nxt['user_id'], bk['event_id']))
+    # If someone is on the waiting list, tell the first person in line
+    promote_waitlist(cur, bk['event_id'])
 
     db.commit(); cur.close(); db.close()
 
@@ -782,6 +799,7 @@ def admin_cancel_booking(bid):
                 (charge, bid))
     cur.execute("UPDATE events SET tickets_remaining=tickets_remaining+%s WHERE id=%s",
                 (bk['quantity'], bk['event_id']))
+    promote_waitlist(cur, bk['event_id'])
     db.commit(); cur.close(); db.close()
     flash(f'Booking {bk["reference"]} cancelled.', 'success')
     return redirect(url_for('admin_bookings'))

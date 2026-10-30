@@ -22,6 +22,7 @@
         </div>
 
         <form method="POST" action="{{ url_for('booking', eid=event.id) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="form-group">
                 <label for="quantity">Number of Tickets</label>

@@ -9,7 +9,8 @@ Bristol Community Events is a Flask and MySQL web application for discovering lo
 - View event details and book tickets.
 - Apply advance-booking discounts and a UWE student discount.
 - Complete a simulated payment form with basic card-field validation.
-- View booking history, download receipts, cancel bookings, and join a waiting list for sold-out events.
+- View booking history, download receipts, and cancel bookings (with a cancellation charge that depends on how close the event is).
+- Join a waiting list for sold-out events. When a booking is cancelled, the next person in line sees "A place has opened" under My Bookings.
 
 ### Administration
 - Manage events, venues, users, and bookings.
@@ -18,13 +19,13 @@ Bristol Community Events is a Flask and MySQL web application for discovering lo
 
 ### Implementation
 - Responsive HTML, CSS, and JavaScript interface.
-- Password hashing with Werkzeug.
+- Password hashing with Werkzeug and CSRF tokens on every form (Flask-WTF).
 - Parameterised SQL queries and role checks for admin pages.
 - Flask sessions configured with an environment-based secret key.
 
 ## Technology
 - Python 3.10+
-- Flask 3.1
+- Flask 3.1 and Flask-WTF (CSRF protection)
 - MySQL 8.0+
 - MySQL Connector/Python
 - HTML, CSS, and JavaScript
@@ -124,17 +125,28 @@ There are no admin credentials in the repository or sample database. To create a
 
 Do not publish your personal account details or password.
 
+## Tests
+
+The pytest suite covers the advance and student discounts, cancellation charges, booking, payment, cancellation, waiting-list notifications, password hashing and CSRF protection. It replaces the database with a small fake, so MySQL is not needed.
+
+```
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+GitHub Actions runs the same tests on every push and pull request.
+
 ## Limitations and testing status
 - Payment is simulated; no payment provider is connected and no real payment is taken.
 - Card fields receive basic format checks only.
-- Waiting-list entries are recorded, but no email notifications are sent.
+- Waiting-list notifications appear on the website only; no emails are sent, and a freed place is not held for the person notified.
 - Multi-day event fields exist in the database, but multi-day bookings are not available through the interface.
-- The forms do not currently include CSRF protection; the project is a coursework demonstration, not a live booking service.
-- No automated test suite is included.
+- This is a coursework demonstration, not a live booking service. It has not had a security review.
+- The tests use a fake database, so they check the application logic but not the SQL itself against a real MySQL server.
 
 ## Future improvements
-- Add automated tests for booking, cancellation, and admin workflows.
-- Add CSRF protection and strengthen server-side form validation.
+- Extend the tests to the admin pages and add integration tests against a real MySQL database.
+- Strengthen server-side form validation.
 - Integrate a payment provider and email notifications.
 - Implement multi-day booking through the interface.
 

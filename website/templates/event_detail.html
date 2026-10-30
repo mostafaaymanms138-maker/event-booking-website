@@ -99,6 +99,7 @@
                         <button class="btn btn-waitlist btn-full" disabled>On Waiting List</button>
                     {% else %}
                         <form method="POST" action="{{ url_for('join_waitlist', eid=event.id) }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-waitlist btn-full">Join Waiting List</button>
                         </form>
                     {% endif %}

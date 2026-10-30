@@ -33,6 +33,7 @@
         </div>
 
         <form method="POST" action="{{ url_for('payment') }}" id="payment-form" novalidate>
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="form-group">
                 <label for="card_name">Name on Card</label>
@@ -80,6 +81,7 @@
         {% else %}
 
         <form method="POST" action="{{ url_for('payment') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="card_number" value="0000000000000000">
             <input type="hidden" name="expiry" value="01/99">
             <input type="hidden" name="cvv" value="000">

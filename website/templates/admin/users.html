@@ -100,6 +100,7 @@
             <button type="button" onclick="closeDeleteModal()"
                     style="background:var(--bg-light);color:var(--text-dark);border:none;padding:0.6rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>
             <form id="delete-form" method="POST" style="margin:0;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit"
                         style="background:#dc2626;color:white;border:none;padding:0.6rem 1.5rem;border-radius:8px;font-weight:600;cursor:pointer;">Delete</button>
             </form>
@@ -115,6 +116,7 @@
                 style="position:absolute;top:1rem;right:1rem;background:none;border:1px solid #d1d5db;border-radius:6px;width:2rem;height:2rem;font-size:1rem;cursor:pointer;color:var(--text-light);display:flex;align-items:center;justify-content:center;">&times;</button>
         <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:1.5rem;color:var(--uwe-dark);">Update User</h2>
         <form id="edit-form" method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label>First Name</label>
                 <input type="text" id="edit-firstname" name="first_name" class="form-control" required>

@@ -23,6 +23,7 @@
         <div class="admin-card" style="margin-bottom:1.5rem;">
             <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;color:var(--uwe-dark);">Add New Event</h2>
             <form method="POST" action="{{ url_for('admin_add_event') }}" class="admin-form">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <!-- Row 1: Event Name (full width) -->
                 <div class="form-group">
@@ -145,10 +146,12 @@
                                     )">Edit</button>
                             <form method="POST" action="{{ url_for('admin_reduce_price', eid=e.id) }}" style="display:inline"
                                   onsubmit="return confirm('Reduce price by 25%?')">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-xs btn-reduce">-25%</button>
                             </form>
                             <form method="POST" action="{{ url_for('admin_delete_event', eid=e.id) }}" style="display:inline"
                                   onsubmit="return confirm('Remove this event?')">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-xs btn-del">Remove</button>
                             </form>
                         </td>
@@ -170,6 +173,7 @@
                 style="position:absolute;top:1rem;right:1rem;background:none;border:1px solid #d1d5db;border-radius:6px;width:2rem;height:2rem;font-size:1rem;cursor:pointer;color:var(--text-light);">&times;</button>
         <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:1.5rem;color:var(--uwe-dark);">Edit Event</h2>
         <form id="edit-event-form" method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label>Event Name *</label>
                 <input type="text" id="edit-name" name="name" class="form-control" required>
